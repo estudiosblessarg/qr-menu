@@ -10,11 +10,12 @@ const db = getFirestore(app);
 const nombre = document.getElementById("nombre");
 const menuDiv = document.getElementById("menu");
 
-// 🔹 Obtener ID desde URL
-const params = new URLSearchParams(location.search);
-const id = params.get("id");
+// 🔹 Obtener ID desde HASH (#)
+const id = location.hash.replace("#", "");
 
-console.log("🔍 ID recibido:", id);
+console.log("🌐 URL completa:", window.location.href);
+console.log("🔗 HASH:", location.hash);
+console.log("🆔 ID procesado:", id);
 
 let data = null;
 let carrito = [];
@@ -25,38 +26,38 @@ let carrito = [];
 async function cargar() {
   try {
     if (!id) {
-      console.warn("❌ No hay ID en la URL");
+      console.warn("❌ No hay ID en la URL (hash vacío)");
       nombre.innerText = "Menú no encontrado";
       return;
     }
 
-    console.log("📡 Buscando en Firestore...");
+    console.log("📡 Buscando en Firestore ID:", id);
 
     const ref = doc(db, "menus", id);
     const snap = await getDoc(ref);
 
     if (!snap.exists()) {
-      console.warn("❌ Documento no existe");
+      console.warn("❌ Documento no existe en Firestore");
       nombre.innerText = "Menú inexistente";
       return;
     }
 
     data = snap.data();
-    console.log("✅ DATA:", data);
+    console.log("✅ DATA recibida:", data);
 
-    // 🔹 Validaciones críticas
-    if (!data.nombre || !data.categorias) {
+    // 🔹 Validación estructura
+    if (!data.nombre || !Array.isArray(data.categorias)) {
       console.error("❌ Estructura inválida:", data);
       nombre.innerText = "Error en datos del menú";
       return;
     }
 
     nombre.innerText = data.nombre;
-    menuDiv.innerHTML = ""; // limpiar por si recarga
+    menuDiv.innerHTML = ""; // limpiar
 
-    // 🔹 Render
+    // 🔹 Render categorías e items
     data.categorias.forEach((cat, i) => {
-      if (!cat.items) {
+      if (!cat.items || !Array.isArray(cat.items)) {
         console.warn(`⚠️ Categoría sin items [${i}]`, cat);
         return;
       }
@@ -75,7 +76,7 @@ async function cargar() {
         el.innerHTML = `
           <p>${item.nombre} - $${item.precio}</p>
           <button>Agregar</button>
-       `;
+        `;
 
         el.querySelector("button").addEventListener("click", () => {
           agregar(item.nombre, item.precio);
@@ -89,7 +90,6 @@ async function cargar() {
 
   } catch (err) {
     console.error("🔥 ERROR REAL:", err);
-
     nombre.innerText = "Error cargando menú";
     menuDiv.innerHTML = "<p>Revisá la consola</p>";
   }
@@ -100,7 +100,7 @@ async function cargar() {
 // =============================
 function agregar(n, p) {
   carrito.push({ n, p });
-  console.log("🛒 Carrito:", carrito);
+  console.log("🛒 Carrito actual:", carrito);
 }
 
 // =============================
@@ -124,12 +124,13 @@ function enviar() {
   });
 
   const url = `https://wa.me/${data.whatsapp}?text=${texto}`;
-  console.log("📲 URL WhatsApp:", url);
+
+  console.log("📲 URL WhatsApp generada:", url);
 
   window.open(url, "_blank");
 }
 
-// 🔹 Exponer al HTML
+// 🔹 Exponer funciones al HTML
 window.enviar = enviar;
 
 // 🚀 INIT

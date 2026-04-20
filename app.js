@@ -82,7 +82,7 @@ window.guardar = async function () {
     console.log("Guardado con ID:", docRef.id);
 
     // 🔗 Generar URL
-    const url = `${window.location.origin}/menu.html?id=${docRef.id}`;
+    const url = `${window.location.origin}/menu.html#id=${docRef.id}`;
 
     link.innerText = url;
 
@@ -109,19 +109,3 @@ window.guardar = async function () {
   }
 };
 
-window.test = async function () {
-  try {
-    console.log("Probando conexión...");
-
-    const docRef = await addDoc(collection(db, "test"), {
-      ok: true,
-      fecha: Date.now()
-    });
-
-    console.log("FUNCIONA:", docRef.id);
-
-  } catch (e) {
-    console.error("FALLA:", e);
-    alert(e.message);
-  }
-};
