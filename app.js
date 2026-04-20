@@ -108,3 +108,20 @@ window.guardar = async function () {
     alert("Error al guardar en Firebase. Revisá configuración.");
   }
 };
+
+window.test = async function () {
+  try {
+    console.log("Probando conexión...");
+
+    const docRef = await addDoc(collection(db, "test"), {
+      ok: true,
+      fecha: Date.now()
+    });
+
+    console.log("FUNCIONA:", docRef.id);
+
+  } catch (e) {
+    console.error("FALLA:", e);
+    alert(e.message);
+  }
+};
