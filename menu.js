@@ -9,6 +9,7 @@ const db = getFirestore(app);
 const nombre = document.getElementById("nombre");
 const menuDiv = document.getElementById("menu");
 const mesaInput = document.getElementById("mesa");
+const seleccionadosDiv = document.getElementById("seleccionados");
 
 // 🔥 ID desde hash
 const id = location.hash.replace("#", "");
@@ -18,6 +19,35 @@ console.log("ID:", id);
 
 let data = null;
 let carrito = [];
+
+// =============================
+// 🛒 RENDER CARRITO
+// =============================
+function renderCarrito() {
+  seleccionadosDiv.innerHTML = "";
+
+  if (carrito.length === 0) {
+    seleccionadosDiv.innerHTML = "<p>No hay productos seleccionados</p>";
+    return;
+  }
+
+  carrito.forEach((item, index) => {
+    const div = document.createElement("div");
+
+    div.innerHTML = `
+      <p>${item.nombre} - $${item.precio}</p>
+      <button>Eliminar</button>
+    `;
+
+    div.querySelector("button").addEventListener("click", () => {
+      carrito.splice(index, 1);
+      console.log("🗑️ Eliminado:", item);
+      renderCarrito();
+    });
+
+    seleccionadosDiv.appendChild(div);
+  });
+}
 
 // =============================
 // 📦 CARGAR MENÚ
@@ -57,6 +87,7 @@ async function cargar() {
         el.querySelector("button").addEventListener("click", () => {
           carrito.push(item);
           console.log("🛒 Carrito:", carrito);
+          renderCarrito();
         });
 
         div.appendChild(el);
@@ -64,6 +95,9 @@ async function cargar() {
 
       menuDiv.appendChild(div);
     });
+
+    // inicial
+    renderCarrito();
 
   } catch (e) {
     console.error("Error:", e);
@@ -89,7 +123,6 @@ window.enviar = function () {
     return;
   }
 
-  // 🕒 Fecha y hora
   const ahora = new Date();
   const fecha = ahora.toLocaleDateString();
   const hora = ahora.toLocaleTimeString();
