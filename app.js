@@ -2,11 +2,10 @@ import { firebaseConfig } from "./firebase.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// 🔥 Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔹 Elementos DOM
+// DOM
 const nombre = document.getElementById("nombre");
 const whatsapp = document.getElementById("whatsapp");
 const catInput = document.getElementById("cat");
@@ -16,21 +15,21 @@ const lista = document.getElementById("lista");
 const qr = document.getElementById("qr");
 const link = document.getElementById("link");
 
-// 🔹 Estado
+// Estado
 let menu = {
   nombre: "",
   whatsapp: "",
   categorias: []
 };
 
-// 🔹 Agregar producto
+// Agregar producto
 window.agregar = function () {
   const cat = catInput.value.trim();
   const prod = prodInput.value.trim();
-  const precio = precioInput.value.trim();
+  const precio = Number(precioInput.value);
 
   if (!cat || !prod || !precio) {
-    alert("Completá categoría, producto y precio");
+    alert("Completá todo");
     return;
   }
 
@@ -45,12 +44,11 @@ window.agregar = function () {
 
   render();
 
-  // limpiar inputs
   prodInput.value = "";
   precioInput.value = "";
 };
 
-// 🔹 Render lista
+// Render
 function render() {
   lista.innerHTML = "";
 
@@ -63,49 +61,42 @@ function render() {
   });
 }
 
-// 🔹 Guardar y generar QR
+// Guardar
 window.guardar = async function () {
   try {
-    console.log("Guardando menú...");
-
     menu.nombre = nombre.value.trim();
     menu.whatsapp = whatsapp.value.trim();
 
     if (!menu.nombre || !menu.whatsapp || menu.categorias.length === 0) {
-      alert("Completá todos los datos");
+      alert("Faltan datos");
       return;
     }
 
-    // 🔥 Guardar en Firebase
     const docRef = await addDoc(collection(db, "menus"), menu);
 
-    console.log("Guardado con ID:", docRef.id);
+    console.log("ID:", docRef.id);
 
-    // 🔗 Generar URL
+    // 🔥 URL CORRECTA (HASH LIMPIO)
     const url = `${window.location.origin}/menu.html#${docRef.id}`;
 
     link.innerText = url;
 
-    // 🧼 Limpiar QR anterior
-    qr.innerHTML = "";
+    // copiar automático
+    navigator.clipboard.writeText(url);
 
-    // 🎯 Crear canvas
+    // QR
+    qr.innerHTML = "";
     const canvas = document.createElement("canvas");
 
-    // 🔳 Generar QR
-    QRCode.toCanvas(canvas, url, { width: 250 }, function (error) {
-      if (error) {
-        console.error("Error QR:", error);
-        alert("Error generando QR");
-        return;
-      }
-
+    QRCode.toCanvas(canvas, url, { width: 250 }, (err) => {
+      if (err) return console.error(err);
       qr.appendChild(canvas);
     });
 
+    alert("Menú creado!");
+
   } catch (e) {
-    console.error("ERROR FIREBASE:", e);
-    alert("Error al guardar en Firebase. Revisá configuración.");
+    console.error(e);
+    alert("Error guardando");
   }
 };
-
