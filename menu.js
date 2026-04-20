@@ -1,22 +1,29 @@
-let carrito = [];
+import { firebaseConfig } from "./firebase.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const nombre = document.getElementById("nombre");
+const menuDiv = document.getElementById("menu");
+
+const id = new URLSearchParams(location.search).get("id");
+
 let data = null;
+let carrito = [];
 
-function obtenerMenu() {
-  const params = new URLSearchParams(window.location.search);
-  const encoded = params.get("data");
+async function cargar() {
+  if (!id) return;
 
-  if (!encoded) return null;
+  const ref = doc(db, "menus", id);
+  const snap = await getDoc(ref);
 
-  const json = decodeURIComponent(escape(atob(encoded)));
-  return JSON.parse(json);
-}
+  if (!snap.exists()) return;
 
-function render() {
-  data = obtenerMenu();
+  data = snap.data();
 
-  document.getElementById("nombre").innerText = data.nombre;
-
-  const menuDiv = document.getElementById("menu");
+  nombre.innerText = data.nombre;
 
   data.categorias.forEach(cat => {
     const div = document.createElement("div");
@@ -35,27 +42,17 @@ function render() {
   });
 }
 
-function agregar(nombre, precio) {
-  carrito.push({ nombre, precio });
-  alert("Agregado");
-}
+window.agregar = (n, p) => {
+  carrito.push({ n, p });
+};
 
-function enviar() {
+window.enviar = () => {
+  if (!data) return;
+
   let texto = "Hola, quiero pedir:%0A";
-
-  carrito.forEach(i => {
-    texto += `- ${i.nombre} ($${i.precio})%0A`;
-  });
+  carrito.forEach(i => texto += `- ${i.n} ($${i.p})%0A`);
 
   window.open(`https://wa.me/${data.whatsapp}?text=${texto}`);
-}
+};
 
-document.getElementById("buscar").addEventListener("input", e => {
-  const valor = e.target.value.toLowerCase();
-  document.querySelectorAll("#menu div p").forEach(p => {
-    p.parentElement.style.display =
-      p.innerText.toLowerCase().includes(valor) ? "block" : "none";
-  });
-});
-
-render();
+cargar();

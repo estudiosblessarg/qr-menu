@@ -1,13 +1,31 @@
+import { firebaseConfig } from "./firebase.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const nombre = document.getElementById("nombre");
+const whatsapp = document.getElementById("whatsapp");
+const catInput = document.getElementById("cat");
+const prodInput = document.getElementById("prod");
+const precioInput = document.getElementById("precio");
+const lista = document.getElementById("lista");
+const qr = document.getElementById("qr");
+const link = document.getElementById("link");
+
 let menu = {
   nombre: "",
   whatsapp: "",
   categorias: []
 };
 
-function agregar() {
-  const cat = document.getElementById("cat").value;
-  const prod = document.getElementById("prod").value;
-  const precio = document.getElementById("precio").value;
+window.agregar = function () {
+  const cat = catInput.value.trim();
+  const prod = prodInput.value.trim();
+  const precio = precioInput.value.trim();
+
+  if (!cat || !prod || !precio) return;
 
   let categoria = menu.categorias.find(c => c.nombre === cat);
 
@@ -18,32 +36,35 @@ function agregar() {
 
   categoria.items.push({ nombre: prod, precio });
 
-  renderLista();
-}
+  render();
+};
 
-function renderLista() {
-  const ul = document.getElementById("lista");
-  ul.innerHTML = "";
+function render() {
+  lista.innerHTML = "";
 
   menu.categorias.forEach(c => {
     c.items.forEach(i => {
       const li = document.createElement("li");
       li.innerText = `${c.nombre} - ${i.nombre} ($${i.precio})`;
-      ul.appendChild(li);
+      lista.appendChild(li);
     });
   });
 }
 
-function generar() {
-  menu.nombre = document.getElementById("nombre").value;
-  menu.whatsapp = document.getElementById("whatsapp").value;
+window.guardar = async function () {
+  menu.nombre = nombre.value.trim();
+  menu.whatsapp = whatsapp.value.trim();
 
-  const json = JSON.stringify(menu);
-  const encoded = btoa(unescape(encodeURIComponent(json)));
+  if (!menu.nombre || !menu.whatsapp || menu.categorias.length === 0) {
+    alert("Completá todos los datos");
+    return;
+  }
 
-  const url = `${location.origin}${location.pathname.replace("index.html","")}menu.html?data=${encoded}`;
+  const docRef = await addDoc(collection(db, "menus"), menu);
 
-  document.getElementById("resultado").innerText = url;
+  const url = `${location.origin}/menu.html?id=${docRef.id}`;
 
-  QRCode.toCanvas(document.getElementById("qr"), url);
-}
+  link.innerText = url;
+
+  QRCode.toCanvas(qr, url, { width: 250 });
+};
