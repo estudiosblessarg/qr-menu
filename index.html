@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crear Menú QR</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<h1>Crear Menú QR</h1>
+
+<input id="nombre" placeholder="Nombre del negocio">
+<input id="whatsapp" placeholder="WhatsApp (549...)">
+
+<h2>Agregar Producto</h2>
+<input id="cat" placeholder="Categoría">
+<input id="prod" placeholder="Producto">
+<input id="precio" placeholder="Precio">
+<button onclick="agregar()">Agregar</button>
+
+<ul id="lista"></ul>
+
+<button onclick="generar()">Generar QR</button>
+
+<div id="resultado"></div>
+<div id="qr"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
