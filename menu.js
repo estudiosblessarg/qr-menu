@@ -8,8 +8,9 @@ const db = getFirestore(app);
 // DOM
 const nombre = document.getElementById("nombre");
 const menuDiv = document.getElementById("menu");
+const mesaInput = document.getElementById("mesa");
 
-// 🔥 LEER DESDE HASH
+// 🔥 ID desde hash
 const id = location.hash.replace("#", "");
 
 console.log("URL:", window.location.href);
@@ -18,7 +19,9 @@ console.log("ID:", id);
 let data = null;
 let carrito = [];
 
-// Cargar menú
+// =============================
+// 📦 CARGAR MENÚ
+// =============================
 async function cargar() {
   try {
     if (!id) {
@@ -53,7 +56,7 @@ async function cargar() {
 
         el.querySelector("button").addEventListener("click", () => {
           carrito.push(item);
-          console.log("Carrito:", carrito);
+          console.log("🛒 Carrito:", carrito);
         });
 
         div.appendChild(el);
@@ -68,17 +71,44 @@ async function cargar() {
   }
 }
 
-// WhatsApp
+// =============================
+// 📲 WHATSAPP
+// =============================
 window.enviar = function () {
-  if (!data || carrito.length === 0) return;
+  if (!data) return;
 
-  let texto = "Hola, quiero pedir:%0A";
+  const mesa = mesaInput.value.trim();
+
+  if (!mesa) {
+    alert("Ingresá el número de mesa");
+    return;
+  }
+
+  if (carrito.length === 0) {
+    alert("Agregá productos primero");
+    return;
+  }
+
+  // 🕒 Fecha y hora
+  const ahora = new Date();
+  const fecha = ahora.toLocaleDateString();
+  const hora = ahora.toLocaleTimeString();
+
+  let texto = `🧾 Pedido\n`;
+  texto += `📍 Mesa: ${mesa}\n`;
+  texto += `📅 Fecha: ${fecha}\n`;
+  texto += `⏰ Hora: ${hora}\n\n`;
+  texto += `🍔 Productos:\n`;
 
   carrito.forEach(i => {
-    texto += `- ${i.nombre} ($${i.precio})%0A`;
+    texto += `- ${i.nombre} ($${i.precio})\n`;
   });
 
-  window.open(`https://wa.me/${data.whatsapp}?text=${texto}`);
+  const url = `https://wa.me/${data.whatsapp}?text=${encodeURIComponent(texto)}`;
+
+  console.log("📲 WhatsApp:", url);
+
+  window.open(url, "_blank");
 };
 
 cargar();
