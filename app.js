@@ -82,7 +82,7 @@ window.guardar = async function () {
     console.log("Guardado con ID:", docRef.id);
 
     // 🔗 Generar URL
-    const url = `${window.location.origin}/menu.html#id=${docRef.id}`;
+    const url = `${window.location.origin}/menu.html#${docRef.id}`;
 
     link.innerText = url;
 
